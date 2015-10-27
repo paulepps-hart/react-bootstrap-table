@@ -75,20 +75,29 @@ class PaginationList extends React.Component {
       );
     });
 
+    // return (
+    //   <div className="row">
+    //     <div className="col-md-1">
+    //       <div className="dropdown">
+    //         <button className="btn btn-default dropdown-toggle" type="button" id="pageDropDown" data-toggle="dropdown"
+    //                 aria-expanded="true">
+    //           {this.state.sizePerPage}
+    //           <span className="caret"/>
+    //         </button>
+    //         <ul className="dropdown-menu" role="menu" aria-labelledby="pageDropDown">
+    //           {sizePerPageList}
+    //         </ul>
+    //       </div>
+    //     </div>
+    //     <div className="col-md-6">
+    //       <ul className="pagination" style={pageListStyle}>
+    //         {pageBtns}
+    //       </ul>
+    //     </div>
+    //   </div>
+    // )
     return (
       <div className="row">
-        <div className="col-md-1">
-          <div className="dropdown">
-            <button className="btn btn-default dropdown-toggle" type="button" id="pageDropDown" data-toggle="dropdown"
-                    aria-expanded="true">
-              {this.state.sizePerPage}
-              <span className="caret"/>
-            </button>
-            <ul className="dropdown-menu" role="menu" aria-labelledby="pageDropDown">
-              {sizePerPageList}
-            </ul>
-          </div>
-        </div>
         <div className="col-md-6">
           <ul className="pagination" style={pageListStyle}>
             {pageBtns}
@@ -118,12 +127,13 @@ class PaginationList extends React.Component {
       endPage = this.totalPages;
       startPage = endPage - this.props.paginationSize + 1;
     }
-    var pages = [Const.FIRST_PAGE, Const.PRE_PAGE];
+//    var pages = [Const.FIRST_PAGE, Const.PRE_PAGE];
+    var pages = [];
     for (var i = startPage; i <= endPage; i++) {
       if (i > 0)pages.push(i);
     }
-    pages.push(Const.NEXT_PAGE);
-    pages.push(Const.LAST_PAGE);
+    // pages.push(Const.NEXT_PAGE);
+    // pages.push(Const.LAST_PAGE);
     return pages;
   }
 
