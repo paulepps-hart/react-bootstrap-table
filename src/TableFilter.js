@@ -51,7 +51,7 @@ class TableFilter extends React.Component{
       return(
         <th key={column.name} style={thStyle}>
           <div className="th-inner table-header-column">
-            <input type="text" placeholder={column.name} name={column.name} onKeyUp={this.handleKeyUp.bind(this)} onChange={this.handleKeyUp.bind(this)}/>
+            <input type="text" placeholder={column.name} name={column.name} onKeyUp={this.handleKeyUp.bind(this)} onChange={this.handleChange.bind(this)}/>
           </div>
         </th>
       )
