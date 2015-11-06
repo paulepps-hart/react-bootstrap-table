@@ -18,6 +18,15 @@ class TableFilter extends React.Component{
     this.props.onFilter(this.filterObj);
   }
 
+  handleChange(e){
+    if(e.currentTarget.value.trim() === "")
+      delete this.filterObj[e.currentTarget.name];
+    else
+      this.filterObj[e.currentTarget.name] = e.currentTarget.value;
+
+    this.props.onFilter(this.filterObj);
+  }
+
   render(){
     var tableClasses = classSet("table", {
       'table-striped': this.props.striped,
@@ -42,7 +51,7 @@ class TableFilter extends React.Component{
       return(
         <th key={column.name} style={thStyle}>
           <div className="th-inner table-header-column">
-            <input type="text" placeholder={column.name} name={column.name} onKeyUp={this.handleKeyUp.bind(this)}/>
+            <input type="text" placeholder={column.name} name={column.name} onKeyUp={this.handleKeyUp.bind(this)} onChange={this.handleKeyUp.bind(this)}/>
           </div>
         </th>
       )
