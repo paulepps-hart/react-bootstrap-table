@@ -19,22 +19,16 @@ function addProducts(quantity) {
 
 addProducts(5);
 
-function afterSearch(searchText, result){
-  console.log('Your search text is ' + searchText);
-  console.log('Result is:');
-  for(let i=0;i<result.length;i++){
-    console.log("Product: " + result[i].id + ", " + result[i].name + ", " + result[i].price);
-  }
-}
-
 var options = {
-  afterSearch: afterSearch  //define a after search hook
-}
+  onRowClick: function(row){
+    alert('You click row id: '+row.id);
+  }
+};
 
-export default class SearchTable extends React.Component{
+export default class SingleSelectTable extends React.Component{
   render(){
     return (
-      <BootstrapTable data={products} search={true} options={options}>
+      <BootstrapTable data={products} options={options}>
           <TableHeaderColumn dataField="id" isKey={true}>Product ID</TableHeaderColumn>
           <TableHeaderColumn dataField="name">Product Name</TableHeaderColumn>
           <TableHeaderColumn dataField="price">Product Price</TableHeaderColumn>

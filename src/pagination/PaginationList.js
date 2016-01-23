@@ -57,6 +57,9 @@ class PaginationList extends React.Component {
         currentPage: this.state.currentPage
       });
       this.props.changePage(this.state.currentPage, selectSize);
+      if(this.props.onSizePerPageList){
+        this.props.onSizePerPageList(selectSize);
+      }
     }
   }
 
@@ -64,6 +67,7 @@ class PaginationList extends React.Component {
     this.totalPages = Math.ceil(this.props.dataSize / this.state.sizePerPage);
     var pageBtns = this.makePage();
     var pageListStyle = {
+      float: "right",
       marginTop: "0px"  //override the margin-top defined in .pagination class in bootstrap.
     }
 
@@ -111,8 +115,17 @@ class PaginationList extends React.Component {
     var pages = this.getPages();
     return pages.map(function (page) {
       var isActive = page === this.state.currentPage;
+      var disabled = false;
+      if(this.state.currentPage == 1 &&
+        (page === Const.FIRST_PAGE || page === Const.PRE_PAGE)){
+          disabled = true;
+      }
+      if(this.state.currentPage == this.totalPages &&
+        (page === Const.NEXT_PAGE || page === Const.LAST_PAGE)){
+          disabled = true;
+      }
       return (
-        <PageButton changePage={this.changePage.bind(this)} active={isActive} key={page}>{page}</PageButton>
+        <PageButton changePage={this.changePage.bind(this)} active={isActive} disable={disabled} key={page}>{page}</PageButton>
       )
     }, this);
   }
@@ -153,6 +166,7 @@ PaginationList.propTypes = {
   sizePerPageList: React.PropTypes.array,
   paginationSize: React.PropTypes.number,
   remote: React.PropTypes.bool,
+  onSizePerPageList: React.PropTypes.func
 };
 
 PaginationList.defaultProps = {

@@ -19,22 +19,27 @@ function addProducts(quantity) {
 
 addProducts(5);
 
-function afterSearch(searchText, result){
-  console.log('Your search text is ' + searchText);
-  console.log('Result is:');
-  for(let i=0;i<result.length;i++){
-    console.log("Product: " + result[i].id + ", " + result[i].name + ", " + result[i].price);
+function customConfirm(next){
+  if (confirm("(It's a custom confirm function)Are you sure you want to delete?")){
+      //If the confirmation is true, call the function that
+      //continues the deletion of the record.
+      next();
   }
 }
 
 var options = {
-  afterSearch: afterSearch  //define a after search hook
+  handleConfirmDeleteRow: customConfirm
 }
 
-export default class SearchTable extends React.Component{
+//If you want to enable deleteRow, you must enable row selection also.
+var selectRowProp = {
+  mode: "checkbox"
+};
+
+export default class DeleteRowCustomComfirmTable extends React.Component{
   render(){
     return (
-      <BootstrapTable data={products} search={true} options={options}>
+      <BootstrapTable data={products} deleteRow={true} selectRow={selectRowProp} options={options}>
           <TableHeaderColumn dataField="id" isKey={true}>Product ID</TableHeaderColumn>
           <TableHeaderColumn dataField="name">Product Name</TableHeaderColumn>
           <TableHeaderColumn dataField="price">Product Price</TableHeaderColumn>

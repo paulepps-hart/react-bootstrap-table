@@ -12,7 +12,8 @@ class ToolBar extends React.Component{
     this.state = {
       isInsertRowTrigger: true,
       validateState:null,
-      shakeEditor:false
+      shakeEditor:false,
+      showSelected: false
     };
   }
   componentWillUnmount(){
@@ -91,6 +92,13 @@ class ToolBar extends React.Component{
     }
   }
 
+  handleShowOnlyToggle = e => {
+    this.setState({
+      showSelected: !this.state.showSelected
+    });
+    this.props.onShowOnlySelected();
+  }
+
   handleDropRowBtnClick(e){
     this.props.onDropRow();
   }
@@ -101,6 +109,10 @@ class ToolBar extends React.Component{
 
   handleKeyUp(e){
     this.props.onSearch(e.currentTarget.value);
+  }
+
+  handleExportCSV() {
+    this.props.onExportCSV();
   }
 
   render(){
@@ -115,19 +127,38 @@ class ToolBar extends React.Component{
             <i className="glyphicon glyphicon-trash"></i> Delete
           </button>:null;
     var searchTextInput = this.props.enableSearch?
-      <input type='text' placeholder={this.props.searchPlaceholder?this.props.searchPlaceholder:'Search'} onKeyUp={this.handleKeyUp.bind(this)}/>:null;
+      <div className="form-group form-group-sm">
+        <input className="form-control" type='text' placeholder={this.props.searchPlaceholder?this.props.searchPlaceholder:'Search'} onKeyUp={this.handleKeyUp.bind(this)}/>
+      </div>:null;
+
+    var showSelectedOnlyBtn = this.props.enableShowOnlySelected?
+      <button type="button" onClick={this.handleShowOnlyToggle.bind(this)} className="btn btn-primary" data-toggle="button" aria-pressed="false">
+        { this.state.showSelected? Const.SHOW_ALL : Const.SHOW_ONLY_SELECT }
+      </button>:null;
+
     var modal = this.props.enableInsert?this.renderInsertRowModal(modalClassName):null;
     var warningStyle = {
       display: "none",
       marginBottom: 0
     };
+
+    var exportCSV = this.props.enableExportCSV ?
+          <button type="button" className="btn btn-success" onClick={this.handleExportCSV.bind(this)}>
+              <i className="glyphicon glyphicon-export"></i> Export to CSV</button> : null;
+
     return(
-      <div>
-        <div className="btn-group btn-group-xs" role="group" aria-label="...">
-          {insertBtn}
-          {deleteBtn}
+      <div className="row">
+        <div className="col-xs-12 col-sm-6 col-md-6 col-lg-8">
+          <div className="btn-group btn-group-sm" role="group">
+            {exportCSV}
+            {insertBtn}
+            {deleteBtn}
+            {showSelectedOnlyBtn}
+          </div>
         </div>
-        {searchTextInput}
+        <div className="col-xs-12 col-sm-6 col-md-6 col-lg-4">
+          {searchTextInput}
+        </div>
         <Notifier ref="notifier"></Notifier>
         {modal}
       </div>
@@ -189,9 +220,11 @@ class ToolBar extends React.Component{
 ToolBar.propTypes = {
   onAddRow: React.PropTypes.func,
   onDropRow: React.PropTypes.func,
+  onShowOnlySelected: React.PropTypes.func,
   enableInsert: React.PropTypes.bool,
   enableDelete: React.PropTypes.bool,
   enableSearch: React.PropTypes.bool,
+  enableShowOnlySelected: React.PropTypes.bool,
   columns: React.PropTypes.array,
   searchPlaceholder: React.PropTypes.string
 };
@@ -199,6 +232,7 @@ ToolBar.propTypes = {
 ToolBar.defaultProps = {
   enableInsert: false,
   enableDelete: false,
-  enableSearch: false
+  enableSearch: false,
+  enableShowOnlySelected: false
 }
 export default ToolBar;

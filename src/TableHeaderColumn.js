@@ -5,14 +5,10 @@ import Util from './util';
 
 class TableHeaderColumn extends React.Component{
 
-  order: Const.SORT_DESC
-
   handleColumnClick(e){
     if(!this.props.dataSort)return;
-    var dom = this.refs.innerDiv;
-    this.order = this.order == Const.SORT_DESC?Const.SORT_ASC:Const.SORT_DESC;
-    this.props.clearSortCaret(this.order, this.props.dataField);
-    dom.appendChild(Util.renderSortCaret(this.order));
+    let order = this.props.sort == Const.SORT_DESC?Const.SORT_ASC:Const.SORT_DESC;
+    this.props.onSort(order, this.props.dataField);
   }
 
   componentDidMount(){
@@ -20,17 +16,23 @@ class TableHeaderColumn extends React.Component{
   }
 
   render(){
+    var width = this.props.width!==null?parseInt(this.props.width):null;
     var thStyle = {
       textAlign: this.props.dataAlign,
       display: this.props.hidden?"none":null,
-      width: this.props.width
+      width: width,
+      maxWidth: width
     };
+
+    const sortCaret = this.props.sort ? Util.renderReactSortCaret(this.props.sort) : null;
 
     var classes = this.props.className+" "+(this.props.dataSort?"sort-column":"");
     return(
-      <th className={classes} style={thStyle}>
+      <th ref='header-col' className={classes} style={thStyle}>
         <div ref="innerDiv" className="th-inner table-header-column"
-          onClick={this.handleColumnClick.bind(this)}>{this.props.children}</div>
+          onClick={this.handleColumnClick.bind(this)}>
+          {this.props.children}{sortCaret}
+        </div>
       </th>
     )
   }
@@ -39,7 +41,7 @@ TableHeaderColumn.propTypes = {
   dataField: React.PropTypes.string,
   dataAlign: React.PropTypes.string,
   dataSort: React.PropTypes.bool,
-  clearSortCaret: React.PropTypes.func,
+  onSort: React.PropTypes.func,
   dataFormat: React.PropTypes.func,
   isKey: React.PropTypes.bool,
   editable: React.PropTypes.any,
@@ -47,7 +49,9 @@ TableHeaderColumn.propTypes = {
   className:React.PropTypes.string,
   width: React.PropTypes.string,
   sortFunc: React.PropTypes.func,
-  columnClassName: React.PropTypes.any
+  columnClassName: React.PropTypes.any,
+  filterFormatted: React.PropTypes.bool,
+  sort: React.PropTypes.string
 };
 
 TableHeaderColumn.defaultProps = {
@@ -56,12 +60,14 @@ TableHeaderColumn.defaultProps = {
   dataFormat: undefined,
   isKey: false,
   editable: true,
-  clearSortCaret: undefined,
+  onSort: undefined,
   hidden: false,
   className: "",
   width: null,
   sortFunc: undefined,
-  columnClassName: ''
+  columnClassName: '',
+  filterFormatted: false,
+  sort: undefined
 };
 
 export default TableHeaderColumn;

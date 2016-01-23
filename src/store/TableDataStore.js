@@ -41,7 +41,7 @@ export class TableDataStore {
 
   constructor(data) {
     this.data = data;
-    this.customSortFuncMap = null;
+    this.colInfos = null;
     this.filteredData = null;
     this.isOnFilter = false;
     this.filterObj = null;
@@ -49,14 +49,17 @@ export class TableDataStore {
     this.sortObj = null;
     this.pageObj = {};
     this.selected = [];
+    this.multiColumnSearch = false;
+    this.showOnlySelected = false;
     this.remote = false; // remote data
   }
 
-  setProps(isPagination, keyField, customSortFuncMap, remote) {
-    this.keyField = keyField;
-    this.enablePagination = isPagination;
-    this.customSortFuncMap = customSortFuncMap;
-    this.remote = remote;
+  setProps(props) {
+    this.keyField = props.keyField;
+    this.enablePagination = props.isPagination;
+    this.colInfos = props.colInfos;
+    this.remote = props.remote;
+    this.multiColumnSearch = props.multiColumnSearch;
   }
 
   setData(data) {
@@ -68,6 +71,10 @@ export class TableDataStore {
     if (this.sortObj) {
       this.sort(this.sortObj.order, this.sortObj.sortField);
     }
+  }
+
+  getSortInfo() {
+    return this.sortObj;
   }
 
   setSelectedRowKey(selectedRowKeys) {
@@ -83,6 +90,19 @@ export class TableDataStore {
     else return this.data;
   }
 
+  ignoreNonSelected() {
+    this.showOnlySelected = !this.showOnlySelected;
+    if(this.showOnlySelected){
+      this.isOnFilter = true;
+      this.filteredData = this.data.filter( row => {
+        let result = this.selected.find(x => row[this.keyField] === x)
+        return typeof result !== 'undefined' ? true : false;
+      });
+    } else {
+      this.isOnFilter = false;
+    }
+  }
+
   sort(order, sortField) {
     this.sortObj = {
       order: order,
@@ -90,7 +110,9 @@ export class TableDataStore {
     };
 
     let currentDisplayData = this.getCurrentDisplayData();
-    let sortFunc = this.customSortFuncMap[sortField];
+    if(!this.colInfos[sortField]) return this;
+
+    const { sortFunc } = this.colInfos[sortField];
     currentDisplayData = _sort(currentDisplayData, sortField, order, sortFunc);
 
     return this;
@@ -115,7 +137,7 @@ export class TableDataStore {
     if (this.isOnFilter) {
       this.data.forEach(function (row) {
         if (row[this.keyField] === rowKeyCache) {
-          row[this.keyField][fieldName] = newVal;
+          row[fieldName] = newVal;
         }
       }, this);
     }
@@ -123,12 +145,12 @@ export class TableDataStore {
   }
 
   add(newObj) {
-    if (newObj[this.keyField].trim() === "") {
+    if (!newObj[this.keyField] || newObj[this.keyField].toString() === '') {
       throw this.keyField + " can't be empty value.";
     }
     let currentDisplayData = this.getCurrentDisplayData();
     currentDisplayData.forEach(function (row) {
-      if (row[this.keyField].toString() === newObj[this.keyField]) {
+      if (row[this.keyField].toString() === newObj[this.keyField].toString()) {
         throw this.keyField + " " + newObj[this.keyField] + " already exists";
       }
     }, this);
@@ -162,10 +184,18 @@ export class TableDataStore {
       this.filterObj = null;
     } else {
       this.filterObj = filterObj;
-      this.filteredData = this.data.filter(function (row) {
+      this.filteredData = this.data.filter( row => {
         let valid = true;
         for (var key in filterObj) {
-          if (row[key].toString().toLowerCase().indexOf(filterObj[key].toLowerCase()) == -1) {
+          let filterVal = filterObj[key].toLowerCase();
+          let targetVal = row[key];
+          if(this.colInfos[key]) {
+            const { format, filterFormatted } = this.colInfos[key];
+            if(filterFormatted && format) {
+              targetVal = format(row[key], row);
+            }
+          }
+          if (targetVal.toString().toLowerCase().indexOf(filterVal) == -1) {
             valid = false;
             break;
           }
@@ -183,19 +213,42 @@ export class TableDataStore {
       this.searchText = null;
     } else {
       this.searchText = searchText;
-      this.filteredData = this.data.filter(function (row) {
+      var searchTextArray = [];
+      this.filteredData = this.data.filter( row => {
         let valid = false;
+
+        if (this.multiColumnSearch) {
+          searchTextArray = searchText.split(' ');
+        } else {
+          searchTextArray.push(searchText);
+        }
+
         for (var key in row) {
-          if (row[key] &&
-            row[key].toString().toLowerCase().indexOf(searchText.toLowerCase()) !== -1) {
-            valid = true;
-            break;
+          if (this.colInfos[key] && row[key]) {
+            searchTextArray.forEach( text => {
+              let filterVal = text.toLowerCase();
+              let targetVal = row[key];
+              const { format, filterFormatted } = this.colInfos[key];
+
+              if(filterFormatted && format) {
+                targetVal = format(targetVal, row);
+              }
+              if (targetVal.toString().toLowerCase().indexOf(filterVal) !== -1) {
+                valid = true;
+              }
+            });
+            if (valid) break;
           }
         }
         return valid;
       });
       this.isOnFilter = true;
     }
+  }
+
+  getDataIgnoringPagination() {
+    let _data = this.getCurrentDisplayData();
+    return _data;
   }
 
   get() {

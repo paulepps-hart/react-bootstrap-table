@@ -4,7 +4,48 @@ import Const from './Const';
 class TableColumn extends React.Component{
 
   constructor(props) {
-		super(props);
+    super(props);
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    const { children } = this.props;
+    let shouldUpdated = this.props.width !== nextProps.width
+      || this.props.className !== nextProps.className
+      || this.props.hidden !== nextProps.hidden
+      || this.props.dataAlign !== nextProps.dataAlign
+      || typeof children !== typeof nextProps.children
+      || (''+this.props.onEdit).toString() !== (''+nextProps.onEdit).toString()
+
+    if(shouldUpdated){
+      return shouldUpdated;
+    }
+
+    if(typeof children === 'object') {
+      if(children.props.dangerouslySetInnerHTML) {
+        shouldUpdated = shouldUpdated ||
+          children.props.dangerouslySetInnerHTML.__html !==
+            nextProps.children.props.dangerouslySetInnerHTML.__html;
+      } else if(children.props.type === 'checkbox' || children.props.type === 'radio') {
+        shouldUpdated = shouldUpdated ||
+          children.props.type !== nextProps.children.props.type ||
+          children.props.checked !== nextProps.children.props.checked;
+      } else {
+        shouldUpdated = true;
+      }
+    } else {
+      shouldUpdated = shouldUpdated || children !== nextProps.children;
+    }
+
+    if(shouldUpdated){
+      return shouldUpdated;
+    }
+
+    if(!(this.props.cellEdit && nextProps.cellEdit)) {
+      return false;
+    } else {
+      return shouldUpdated
+        || this.props.cellEdit.mode !== nextProps.cellEdit.mode;
+    }
   }
 
   handleCellEdit(e){
@@ -22,10 +63,19 @@ class TableColumn extends React.Component{
   }
 
   render(){
+    var width = this.props.width == null?
+                  this.props.width:parseInt(this.props.width);
     var tdStyle = {
       textAlign: this.props.dataAlign,
-      display: this.props.hidden?"none":null
+      display: this.props.hidden?"none":null,
+      width: width,
+      maxWidth: width
     };
+    var classname = this.props.className;
+    if(this.props.width){
+        classname += " col-md-"+width;
+    }
+
 
     var opts = {};
     if(this.props.cellEdit){
@@ -36,7 +86,7 @@ class TableColumn extends React.Component{
       }
     }
     return (
-      <td style={tdStyle} className={this.props.className} {...opts}>
+      <td style={tdStyle} className={classname} {...opts}>
         {this.props.children}
       </td>
     )
